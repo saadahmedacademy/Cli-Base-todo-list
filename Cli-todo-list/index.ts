@@ -2,11 +2,13 @@
 
 // This is a simple todo-list project:
 import inquirer from 'inquirer'
+import { text } from 'stream/consumers';
 
 
 // main list to store data
 // Main list to store data
 let todosData = [
+    '',
     '\n1. My name is Saad Ahmed',
     '\n2. Today I will have to attend a Zoom class.',
     '\n3. Today I will create a todo-list project.',
@@ -35,46 +37,40 @@ let todoOptions = await inquirer.prompt(
 if(todoOptions.options == "Show TodoList"){
     console.log(`Here are your todo items:\n${todosData.join('')}`);
 }
-else if(todoOptions.options == "Add Todos"){
-    
-let addTodo = await inquirer.prompt(
-    [
-        {
-            name:'input1',
-            type:"input",
-            message:"\nWhat do you want to add in list?",
-        },
-        {
-            name:'addMore',
-            type:'confirm',
-            message:"\nDo you want to do add anything else ?",
-        }
-    ]
-)
+else if (todoOptions.options == "Add Todos") {
+    let addTodo = await inquirer.prompt(
+        [
+            {
+                name: 'input1',
+                type: "input",
+                message: "\nWhat do you want to add in list?",
+            },
+            {
+                name: 'addMore',
+                type: 'confirm',
+                message: "\nDo you want to add anything else?",
+            }
+        ]
+    );
 
- if(addTodo.addMore){
-    let addMoreInput = await inquirer.prompt(
-        {
-            name:'input2',
-            type:"input",
-            message:"\nWhat do you want to add more?",
-        },
-    )
+    todosData.push('\n' + `${++countList} ${addTodo.input1}`);
 
-    todosData.push('\n' + `${countList++} ${addTodo.input1}`);
-    todosData.push('\n' + `${countList++} ${addMoreInput.input2}`);
+    if (addTodo.addMore) {
+        let addMoreInput = await inquirer.prompt(
+            {
+                name: 'input2',
+                type: "input",
+                message: "\nWhat do you want to add more?",
+            },
+        );
+
+        todosData.push('\n' + `${++countList} ${addMoreInput.input2}`);
+    }
 
     console.log('\nHere is your todo items list:');
     console.log(`${todosData.join('')}`);
 
-}else{
-  
-    todosData.push('\n' + addTodo.input1);
-    console.log('\nHere is your todo items list:');
-    console.log(`${todosData.join('')}`);
- }
- 
-}
+} 
 else if(todoOptions.options == "Delete Last items"){
         let removeItem = todosData.pop();
         console.log(`${removeItem} has been deleted from TodoItems`);
@@ -86,7 +82,34 @@ else if(todoOptions.options == "Delete All"){
     todosData = [];
     console.log('\nAll todo items have been deleted.');
 }
-else if(todoOptions.options == "Edit"){
-    
+
+else if (todoOptions.options === "Edit") {
+    const editTodo = async (): Promise<void> => {
+        let editTodoList = await inquirer.prompt([
+            {
+                name: 'text',
+                message: "Enter Edit Text :",
+                type: 'input'
+            },
+            {
+                name: 'index',
+                message: 'Enter Todos index number',
+                type: 'number'
+            }
+        ]);
+
+        const { text, index } = editTodoList;
+
+        if (index >= 1 && index <= todosData.length) {
+            todosData[index - 1] = ''
+            todosData[index - 1] = `\n${index}. ${text}`;
+            console.log(`Todo item at index ${index} updated.`);
+            console.log(`\nHere is your updated todo items list:\n${todosData.join('')}`);
+        } else {
+            console.log(`Invalid index ${index}. Todo item not found.`);
+        }
+    }
+
+    await editTodo();
 }
 }
